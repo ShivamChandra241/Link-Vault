@@ -51,7 +51,7 @@ export const SettingsView: React.FC = () => {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3 text-indigo-400">
               <Key size={20} />
-              <h3 className="font-semibold text-white">AI Configuration</h3>
+              <h3 className="font-semibold text-white">Engine Configuration</h3>
             </div>
             <button 
               onClick={() => setAiEnabled(!settings.aiEnabled)}
@@ -61,19 +61,19 @@ export const SettingsView: React.FC = () => {
             </button>
           </div>
           
-          <label className="block text-sm font-bold text-slate-300 mb-2">Gemini API Key</label>
+          <label className="block text-sm font-bold text-slate-300 mb-2">Access Token</label>
           <input 
             type="password"
             value={settings.apiKey}
             onChange={(e) => setApiKey(e.target.value)}
-            placeholder="AIzaSy..."
+            placeholder="Token..."
             className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all text-sm mb-4"
           />
           
           <div className="flex items-start gap-3 p-4 bg-indigo-500/5 border border-indigo-500/10 rounded-xl">
             <AlertCircle size={18} className="text-indigo-400 shrink-0 mt-0.5" />
             <p className="text-xs text-indigo-300/70 leading-relaxed">
-              Your key is stored <b>locally</b> in your browser and never sent to our servers. You can get a free key from the Google AI Studio.
+              Your token is stored <b>locally</b> in your browser. You can obtain it from your service provider dashboard.
             </p>
           </div>
         </div>

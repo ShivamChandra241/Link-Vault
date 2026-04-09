@@ -4,17 +4,16 @@ import {
   Globe, 
   Type, 
   Image as ImageIcon, 
-  Sparkles, 
+  Cpu, 
   Loader2,
   Calendar,
   StickyNote,
-  ArrowRight,
   Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { useVault } from '../context/VaultContext';
-import { analyzeContent } from '../services/gemini';
+import { processInput } from '../services/processor';
 import { extractTextFromImage } from '../services/ocr';
 
 interface CaptureModalProps {
@@ -54,16 +53,15 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({ isOpen, onClose }) =
 
     setLoading(true);
     try {
-      let aiResult = null;
+      let result = null;
       if (settings.aiEnabled && settings.apiKey) {
-        aiResult = await analyzeContent(settings.apiKey, input, tab);
+        result = await processInput(settings.apiKey, input, tab);
       }
 
-      if (aiResult) {
-        setAnalysisResult(aiResult);
+      if (result) {
+        setAnalysisResult(result);
         setStep('review');
       } else {
-        // Fallback if AI fails or is disabled
         addItem({
           title: tab === 'url' ? new URL(input).hostname : input.substring(0, 30),
           summary: tab === 'url' ? `Bookmark from ${input}` : input.substring(0, 100),
@@ -78,7 +76,7 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({ isOpen, onClose }) =
       }
     } catch (error) {
       console.error(error);
-      alert("Something went wrong. Please check your API key.");
+      alert("Processing error. Please check your configuration.");
     } finally {
       setLoading(false);
     }
@@ -108,7 +106,7 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({ isOpen, onClose }) =
       setInput(text);
       setTab('text');
     } catch (err) {
-      alert("OCR Failed to read image");
+      alert("Failed to read image content");
     } finally {
       setOcrLoading(false);
     }
@@ -127,10 +125,10 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({ isOpen, onClose }) =
             <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400">
-                  <Sparkles size={18} />
+                  <Cpu size={18} />
                 </div>
                 <h2 className="text-xl font-bold text-white tracking-tight">
-                  {step === 'input' ? 'Capture Intelligence' : 'Refine Task'}
+                  {step === 'input' ? 'Index Content' : 'Refine Entry'}
                 </h2>
               </div>
               <button onClick={handleClose} className="text-slate-500 hover:text-white transition-colors">
@@ -188,7 +186,7 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({ isOpen, onClose }) =
                       <textarea
                         autoFocus
                         className="w-full h-32 bg-slate-950 border border-slate-800 rounded-2xl p-4 text-slate-200 placeholder-slate-600 focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all resize-none text-sm"
-                        placeholder={tab === 'url' ? "Paste a link to analyze..." : "Paste thoughts, snippets, or data..."}
+                        placeholder={tab === 'url' ? "Paste a link to index..." : "Paste thoughts, snippets, or data..."}
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                       />
@@ -202,8 +200,8 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({ isOpen, onClose }) =
                         <Loader2 size={20} className="animate-spin" />
                       ) : (
                         <>
-                          <Sparkles size={18} /> 
-                          {settings.aiEnabled ? "Process with Gemini" : "Save to Vault"}
+                          <Cpu size={18} /> 
+                          {settings.aiEnabled ? "Index Content" : "Save to Vault"}
                         </>
                       )}
                     </button>
@@ -214,13 +212,13 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({ isOpen, onClose }) =
                   <div className="rounded-2xl overflow-hidden border border-slate-800 bg-slate-950">
                     <img 
                       src={`https://picsum.photos/seed/${encodeURIComponent(analysisResult.imageSearchTerm || analysisResult.title)}/800/400`}
-                      alt="AI Generated"
+                      alt="Generated Preview"
                       referrerPolicy="no-referrer"
                       className="w-full h-32 object-cover"
                     />
                     <div className="p-4">
                       <h3 className="text-sm font-bold text-indigo-400 mb-1 flex items-center gap-2">
-                        <Sparkles size={14} /> AI Analysis
+                        <Cpu size={14} /> System Analysis
                       </h3>
                       <p className="text-lg font-bold text-white leading-tight">{analysisResult?.title}</p>
                       <p className="text-xs text-slate-500 mt-1">{analysisResult?.summary}</p>
@@ -266,7 +264,7 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({ isOpen, onClose }) =
                       onClick={handleFinalSave}
                       className="flex-[2] bg-indigo-600 hover:bg-indigo-500 text-white py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 shadow-xl shadow-indigo-600/20 active:scale-[0.98]"
                     >
-                      <Check size={18} /> Save Task
+                      <Check size={18} /> Save Entry
                     </button>
                   </div>
                 </div>

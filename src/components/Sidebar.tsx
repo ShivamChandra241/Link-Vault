@@ -3,8 +3,9 @@ import {
   LayoutGrid, 
   CheckSquare, 
   Settings as SettingsIcon, 
-  BrainCircuit,
-  Clock
+  Cpu,
+  Clock,
+  Database
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -20,7 +21,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, taskCoun
     <nav className="w-20 md:w-64 border-r border-slate-800/50 bg-slate-900/20 backdrop-blur-xl flex flex-col p-4 h-full">
       <div className="flex items-center gap-3 px-2 mb-10">
         <div className="p-2 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-500/20">
-          <BrainCircuit size={24} className="text-white" />
+          <Database size={24} className="text-white" />
         </div>
         <h1 className="text-xl font-bold tracking-tight hidden md:block bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
           NeuroVault
@@ -41,13 +42,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, taskCoun
           label="Tasks" 
           count={taskCount} 
         />
+        <NavItem 
+          active={currentView === 'review'} 
+          onClick={() => setView('review')} 
+          icon={<Clock size={20}/>} 
+          label="Review" 
+          count={reviewCount} 
+        />
         
         <div className="pt-4 pb-2 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest hidden md:block">
-          Insight
-        </div>
-        <div className="flex items-center gap-3 px-4 py-2 text-sm text-amber-400/80">
-          <Clock size={16} />
-          <span className="hidden md:block">{reviewCount} for review</span>
+          System
         </div>
       </div>
 

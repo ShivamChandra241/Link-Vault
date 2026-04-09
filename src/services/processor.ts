@@ -1,14 +1,15 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-export const analyzeContent = async (apiKey: string, content: string, sourceType: string) => {
+// Core processing engine for content indexing
+export const processInput = async (token: string, content: string, sourceType: string) => {
   try {
-    const ai = new GoogleGenAI({ apiKey });
+    const engine = new GoogleGenAI({ apiKey: token });
     
-    const response = await ai.models.generateContent({
+    const response = await engine.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Analyze this ${sourceType}: "${content.substring(0, 5000)}"`,
+      contents: `Process this ${sourceType}: "${content.substring(0, 5000)}"`,
       config: {
-        systemInstruction: "You are NeuroVault AI, a professional information architect. Extract metadata and return a JSON object.",
+        systemInstruction: "You are a professional information architect. Extract metadata and return a JSON object.",
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -29,11 +30,11 @@ export const analyzeContent = async (apiKey: string, content: string, sourceType
       }
     });
 
-    const text = response.text;
-    if (!text) throw new Error("No response from AI");
-    return JSON.parse(text);
-  } catch (error) {
-    console.error("AI Analysis Failed:", error);
+    const data = response.text;
+    if (!data) throw new Error("Processing failed");
+    return JSON.parse(data);
+  } catch (error: any) {
+    console.error("Engine Error:", error);
     return null;
   }
 };

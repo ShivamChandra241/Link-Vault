@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React, { useState, useMemo } from 'react';
 import { 
   Plus, 
@@ -15,11 +10,12 @@ import { VaultCard } from './components/VaultCard';
 import { CaptureModal } from './components/CaptureModal';
 import { SettingsView } from './components/SettingsView';
 import { EmptyState } from './components/EmptyState';
+import { ReviewView } from './components/ReviewView';
 import { VaultProvider, useVault } from './context/VaultContext';
 import { cn } from './lib/utils';
 import { isAfter, subDays } from 'date-fns';
 
-const NeuroVaultApp: React.FC = () => {
+const NeuroVaultApp = () => {
   const { items, settings, updateItem, deleteItem } = useVault();
   const [view, setView] = useState('dashboard');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,9 +35,51 @@ const NeuroVaultApp: React.FC = () => {
   const taskCount = items.filter(i => i.type === 'task' && !i.completed).length;
   const reviewCount = items.filter(i => isAfter(subDays(new Date(), 3), new Date(i.createdAt)) && !i.completed).length;
 
+  const renderContent = () => {
+    if (view === 'settings') return <SettingsView />;
+    if (view === 'review') return <ReviewView items={items} />;
+    
+    return (
+      <>
+        <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2 no-scrollbar">
+          <Filter size={14} className="text-slate-500 mr-2" />
+          {['All', 'Learning', 'Work', 'Finance', 'Shopping', 'Entertainment', 'Personal'].map(cat => (
+            <button
+              key={cat}
+              onClick={() => setFilter(cat)}
+              className={cn(
+                "px-4 py-1.5 rounded-full text-xs font-semibold transition-all border whitespace-nowrap",
+                filter === cat 
+                  ? "bg-white text-black border-white" 
+                  : "bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-700"
+              )}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {filteredItems.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+            {filteredItems.map(item => (
+              <VaultCard 
+                key={item.id} 
+                item={item} 
+                onDelete={deleteItem} 
+                onPin={(id) => updateItem(id, { pinned: !item.pinned })} 
+                onToggleComplete={(id, status) => updateItem(id, { completed: status })} 
+              />
+            ))}
+          </div>
+        ) : (
+          <EmptyState />
+        )}
+      </>
+    );
+  };
+
   return (
     <div className="flex h-screen bg-[#020408] text-slate-300 font-sans antialiased overflow-hidden">
-      {/* Background blobs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-600/5 rounded-full blur-[120px]" />
         <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-[100px]" />
@@ -60,7 +98,7 @@ const NeuroVaultApp: React.FC = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
             <input 
               type="text"
-              placeholder="Search nodes, tags, or links..."
+              placeholder="Search data..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all text-sm"
@@ -70,7 +108,7 @@ const NeuroVaultApp: React.FC = () => {
           <div className="flex items-center gap-4">
             {!settings.apiKey && settings.aiEnabled && (
               <div className="hidden lg:flex items-center gap-2 text-xs text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-full border border-amber-500/20">
-                <AlertCircle size={14} /> Add API Key in Settings
+                <AlertCircle size={14} /> Configure Access Token
               </div>
             )}
             <button 
@@ -83,45 +121,7 @@ const NeuroVaultApp: React.FC = () => {
         </header>
 
         <div className="flex-1 overflow-y-auto p-8 scrollbar-thin scrollbar-thumb-slate-800">
-          {view === 'settings' ? (
-            <SettingsView />
-          ) : (
-            <>
-              <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2 no-scrollbar">
-                <Filter size={14} className="text-slate-500 mr-2" />
-                {['All', 'Learning', 'Work', 'Finance', 'Shopping', 'Entertainment', 'Personal'].map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => setFilter(cat)}
-                    className={cn(
-                      "px-4 py-1.5 rounded-full text-xs font-semibold transition-all border whitespace-nowrap",
-                      filter === cat 
-                        ? "bg-white text-black border-white" 
-                        : "bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-700"
-                    )}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-
-              {filteredItems.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-                  {filteredItems.map(item => (
-                    <VaultCard 
-                      key={item.id} 
-                      item={item} 
-                      onDelete={deleteItem} 
-                      onPin={(id) => updateItem(id, { pinned: !item.pinned })} 
-                      onToggleComplete={(id, status) => updateItem(id, { completed: status })} 
-                    />
-                  ))}
-                </div>
-              ) : (
-                <EmptyState />
-              )}
-            </>
-          )}
+          {renderContent()}
         </div>
       </main>
 
